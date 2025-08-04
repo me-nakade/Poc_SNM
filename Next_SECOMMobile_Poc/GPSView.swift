@@ -105,42 +105,39 @@ struct GPSView: View {
     @State private var now = Date()
     
     var body: some View{
-        VStack(alignment: .leading){
-            Text("\(CommonUtil.formatDate(now))\n")
-            Text("【測定結果(GPS機能)】")
-            if let location = locationManager.lastLocation {
-                Text("緯度: \(location.coordinate.latitude)")
-                Text("経度: \(location.coordinate.longitude)")
-                Text("精度: \(location.horizontalAccuracy) m") //緯度・経度の誤差
-                if(location.speed >= 0) {
-                    Text("速度: \(location.speed) m/s")
-                } else {
-                    Text("速度: 取得不可")
+        NavigationStack {
+            VStack(alignment: .leading){
+                Text("\(CommonUtil.formatDate(now))\n")
+                Text("【測定結果(GPS機能)】")
+                if let location = locationManager.lastLocation {
+                    Text("緯度: \(location.coordinate.latitude)")
+                    Text("経度: \(location.coordinate.longitude)")
+                    Text("精度: \(location.horizontalAccuracy) m")
+                    if(location.speed >= 0) {
+                        Text("速度: \(location.speed) m/s")
+                    } else {
+                        Text("速度: 取得不可")
+                    }
                 }
-            }
 
-            if locationManager.batteryLevel >= 0 {
-                Text("バッテリー残量: \(Int(locationManager.batteryLevel * 100))%")
-            } else {
-                Text("バッテリー残量: 取得失敗")
-            }
+                if locationManager.batteryLevel >= 0 {
+                    Text("バッテリー残量: \(Int(locationManager.batteryLevel * 100))%")
+                } else {
+                    Text("バッテリー残量: 取得失敗")
+                }
 
-            if let error = locationManager.errorMessage {
-                Text(error).foregroundColor(.red)
-            }
-        }
-        .padding()
-        .onAppear {
-            // 1秒ごとに現在時刻を更新
-            Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-                now = Date()
-            }
-            locationManager.requestLocation()
-        }
+                if let error = locationManager.errorMessage {
+                    Text(error).foregroundColor(.red)
+                }
 
-        NavigationStack{
-            VStack {
                 NavigationLink("ホームに戻る", destination: ContentView())
+            }
+            .padding()
+            .onAppear {
+                Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+                    now = Date()
+                }
+                locationManager.requestLocation()
             }
         }
     }

@@ -45,6 +45,14 @@ struct ContentView: View {
                         .foregroundColor(.white)
                         .cornerRadius(5)
                 }
+                NavigationLink(destination: GPSView2()) {
+                    Text("GPS機能２")
+                        .frame(maxWidth: 150 , maxHeight: 25)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(5)
+                }
             }
         }
     }
