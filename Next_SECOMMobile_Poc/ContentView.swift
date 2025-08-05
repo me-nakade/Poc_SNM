@@ -13,7 +13,7 @@ struct ContentView: View {
         NavigationStack {
             VStack {
                 Text("【Poc開発】")
-                NavigationLink(destination: GPSView()) {
+                NavigationLink(destination: GPSView2()) {
                     Text("GPS機能")
                         .frame(maxWidth: 150 , maxHeight: 25)
                         .padding()
@@ -45,14 +45,14 @@ struct ContentView: View {
                         .foregroundColor(.white)
                         .cornerRadius(5)
                 }
-                NavigationLink(destination: GPSView2()) {
-                    Text("GPS機能２")
-                        .frame(maxWidth: 150 , maxHeight: 25)
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(5)
-                }
+                // NavigationLink(destination: GPSView2()) {
+                //     Text("GPS機能２")
+                //         .frame(maxWidth: 150 , maxHeight: 25)
+                //         .padding()
+                //         .background(Color.blue)
+                //         .foregroundColor(.white)
+                //         .cornerRadius(5)
+                // }
             }
         }
     }

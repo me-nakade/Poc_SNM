@@ -40,10 +40,13 @@ class LocationInfo: ObservableObject {
             for try await update in updates {
                 if let location = update.location {
                     DispatchQueue.main.async {
+                        let isFirst = self.lastLocation == nil
                         self.lastLocation = location
                         self.batteryLevel = UIDevice.current.batteryLevel
                         self.errorMessage = ""
-                        self.writeLog()
+                        if isFirst {
+                            self.writeLog() // 初回のみ
+                        }
                     }
                 } else {
                     DispatchQueue.main.async {
