@@ -1,8 +1,15 @@
+//
+//  GPSView2.swift
+//  Next_SECOMMobile_Poc
+//
+//  Created by 中出恵美 on 2025/08/04.
+//
+
 import SwiftUI
 import CoreLocation
 
 @MainActor
-class GpsSample: ObservableObject {
+class LocationInfo: ObservableObject {
     private enum Const{
         static let LOGFILENAME = "location_2.log"
     }
@@ -16,25 +23,19 @@ class GpsSample: ObservableObject {
 
     private var logTimer: Timer?
     
-    private static var isInitialized = false
-    static var shared: GpsSample = {
-        let instance = GpsSample()
-        isInitialized = true
+    static var shared: LocationInfo = {
+        let instance = LocationInfo()
         return instance
     }()
 
     private init() {
-        print("GpsSampleインスタンス生成")
+        print("LocationInfoインスタンス生成")
         UIDevice.current.isBatteryMonitoringEnabled = true
         batteryLevel = UIDevice.current.batteryLevel
         startLogTimer()
     }
 
-    static func isInstanceInitialized() -> Bool {
-        isInitialized
-    }
-    
-    func startUpdates() async {
+    func updatesLocationInfo() async {
         do {
             for try await update in updates {
                 if let location = update.location {
@@ -42,15 +43,13 @@ class GpsSample: ObservableObject {
                         self.lastLocation = location
                         self.batteryLevel = UIDevice.current.batteryLevel
                         self.errorMessage = ""
+                        self.writeLog()
                     }
                 } else {
                     DispatchQueue.main.async {
                         self.errorMessage = "位置情報が取得できません"
                     }
                 }
-                // if update.stationary {
-                //     break
-                // }
             }
         } catch {
             DispatchQueue.main.async {
@@ -91,8 +90,7 @@ class GpsSample: ObservableObject {
 
 // 画面
 struct GPSView2: View {
-    @ObservedObject private var gpsSample: GpsSample =
-        GpsSample.isInstanceInitialized() ? GpsSample.shared : GpsSample.shared
+    @ObservedObject private var locationInfo = LocationInfo.shared
     @State private var now = Date()
     
     var body: some View{
@@ -101,7 +99,7 @@ struct GPSView2: View {
                 Text("GPS_2")
                 Text("\(CommonUtil.formatDate(now))\n")
                 Text("【測定結果(GPS機能)】")
-                if let location = gpsSample.lastLocation {
+                if let location = locationInfo.lastLocation {
                     Text("緯度: \(location.coordinate.latitude)")
                     Text("経度: \(location.coordinate.longitude)")
                     Text("精度: \(location.horizontalAccuracy) m")
@@ -111,12 +109,12 @@ struct GPSView2: View {
                         Text("速度: 取得不可")
                     }
                 }
-                if gpsSample.batteryLevel >= 0 {
-                    Text("バッテリー残量: \(Int(gpsSample.batteryLevel * 100))%")
+                if locationInfo.batteryLevel >= 0 {
+                    Text("バッテリー残量: \(Int(locationInfo.batteryLevel * 100))%")
                 } else {
                     Text("バッテリー残量: 取得失敗")
                 }
-                if let error = gpsSample.errorMessage {
+                if let error = locationInfo.errorMessage {
                     Text(error).foregroundColor(.red)
                 }
                 NavigationLink("ホームに戻る", destination: ContentView())
@@ -128,7 +126,7 @@ struct GPSView2: View {
                 }
             }
             .task {
-                await gpsSample.startUpdates()
+                await locationInfo.updatesLocationInfo()
             }
         }
     }
