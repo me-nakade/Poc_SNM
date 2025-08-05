@@ -8,21 +8,21 @@
 import SwiftUI
 import CoreNFC
 
-class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate {
+class NFCManager: NSObject, ObservableObject, NFCTagReaderSessionDelegate {
     @Published var message: String = ""
     @Published var errorDetail: String = ""
-    private var session: NFCNDEFReaderSession?
+    private var session: NFCTagReaderSession?
 
     func startScan() {
-        guard session == nil else { return } // セッションがなければ開始
+        guard session == nil else { return }
         message = "タグをかざしてください"
         errorDetail = ""
-        session = NFCNDEFReaderSession(delegate: self, queue: nil, invalidateAfterFirstRead: true)
+        session = NFCTagReaderSession(pollingOption: .iso14443, delegate: self)
+        session?.alertMessage = "NFCタグを読み取ります"
         session?.begin()
     }
 
-    // 読み取り成功時
-    func readerSession(_ session: NFCNDEFReaderSession, didDetectNDEFs messages: [NFCNDEFMessage]) {
+    func tagReaderSession(_ session: NFCTagReaderSession, didDetect tags: [NFCTag]) {
         DispatchQueue.main.async {
             self.message = "読み取り成功"
             self.errorDetail = ""
@@ -30,19 +30,22 @@ class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate {
         session.invalidate()
     }
 
-    // 読み取り失敗時
-    func readerSession(_ session: NFCNDEFReaderSession, didInvalidateWithError error: Error) {
+    func tagReaderSession(_ session: NFCTagReaderSession, didInvalidateWithError error: Error) {
         DispatchQueue.main.async {
             self.message = "読み取り失敗"
             self.errorDetail = error.localizedDescription
-            self.session = nil // セッションを解放
+            self.session = nil
         }
+    }
+    
+    func tagReaderSessionDidBecomeActive(_ session: NFCTagReaderSession) {
+        // セッションがアクティブになった時に呼ばれます（何もしなくてOK）
     }
 }
 
 // NFCタグの読み取り画面
 struct NFCTagView: View {
-    @StateObject private var nfcReader = NFCReader()
+    @StateObject private var nfcReader = NFCManager()
 
     var body: some View {
         VStack(spacing: 20) {
